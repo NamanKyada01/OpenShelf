@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   FlatList,
   Pressable,
@@ -6,31 +6,31 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { MediaCard } from '../components/MediaCard';
 import { Screen } from '../components/Screen';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import { getMediaTypeOptions } from '../media-types';
+import type { MainStackParamList } from '../navigation/MainStack';
 import { setFilterStatus, setFilterType } from '../store/slices/mediaSlice';
 import type { MediaStatus, MediaType } from '../types';
 import { radius, spacing } from '../theme/spacing';
+
+type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 const STATUS_FILTERS: Array<{ label: string; value: MediaStatus | 'all' }> = [
   { label: 'All', value: 'all' },
   { label: 'Plan', value: 'plan' },
   { label: 'Active', value: 'in_progress' },
   { label: 'Done', value: 'completed' },
-];
-
-const TYPE_FILTERS: Array<{ label: string; value: MediaType | 'all' }> = [
-  { label: 'All', value: 'all' },
-  { label: 'Movies', value: 'movie' },
-  { label: 'TV', value: 'tv' },
-  { label: 'Books', value: 'book' },
-  { label: 'Games', value: 'game' },
+  { label: 'Dropped', value: 'dropped' },
 ];
 
 export function LibraryScreen() {
   const { palette } = useTheme();
+  const navigation = useNavigation<Nav>();
   const dispatch = useAppDispatch();
   const { items, filterStatus, filterType } = useAppSelector(state => state.media);
 
@@ -74,7 +74,7 @@ export function LibraryScreen() {
       </View>
 
       <View style={styles.filters}>
-        {TYPE_FILTERS.map(f => (
+        {[{ label: 'All', value: 'all' as const }, ...getMediaTypeOptions().map(t => ({ label: t.label + 's', value: t.type }))].map(f => (
           <Pressable
             key={f.value}
             onPress={() => dispatch(setFilterType(f.value))}
@@ -109,7 +109,12 @@ export function LibraryScreen() {
             No items match your filters.
           </Text>
         }
-        renderItem={({ item }) => <MediaCard item={item} />}
+        renderItem={({ item }) => (
+          <MediaCard
+            item={item}
+            onPress={() => navigation.navigate('MediaDetail', { itemId: item.id })}
+          />
+        )}
       />
     </Screen>
   );

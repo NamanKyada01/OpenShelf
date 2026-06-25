@@ -11,14 +11,8 @@ import {
 import Modal from 'react-native-modal';
 import type { MediaStatus, MediaType } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { getMediaTypeOptions } from '../media-types';
 import { radius, spacing } from '../theme/spacing';
-
-const MEDIA_TYPES: { label: string; value: MediaType }[] = [
-  { label: 'Movie', value: 'movie' },
-  { label: 'TV', value: 'tv' },
-  { label: 'Book', value: 'book' },
-  { label: 'Game', value: 'game' },
-];
 
 const STATUSES: { label: string; value: MediaStatus }[] = [
   { label: 'Plan', value: 'plan' },
@@ -35,6 +29,7 @@ interface AddMediaModalProps {
     type: MediaType;
     status: MediaStatus;
     notes?: string;
+    tags?: string[];
   }) => Promise<void>;
 }
 
@@ -44,6 +39,7 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
   const [type, setType] = useState<MediaType>('movie');
   const [status, setStatus] = useState<MediaStatus>('plan');
   const [notes, setNotes] = useState('');
+  const [tagsInput, setTagsInput] = useState('');
   const [loading, setLoading] = useState(false);
 
   const reset = () => {
@@ -51,6 +47,7 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
     setType('movie');
     setStatus('plan');
     setNotes('');
+    setTagsInput('');
     setLoading(false);
   };
 
@@ -60,7 +57,17 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
     }
     setLoading(true);
     try {
-      await onSubmit({ title: title.trim(), type, status, notes: notes.trim() || undefined });
+      const tags = tagsInput
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
+      await onSubmit({
+        title: title.trim(),
+        type,
+        status,
+        notes: notes.trim() || undefined,
+        tags: tags.length ? tags : undefined,
+      });
       reset();
       onClose();
     } finally {
@@ -95,26 +102,26 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
 
         <Text style={[styles.label, { color: palette.textSecondary }]}>Type</Text>
         <View style={styles.row}>
-          {MEDIA_TYPES.map(opt => (
+          {getMediaTypeOptions().map(opt => (
             <Pressable
-              key={opt.value}
-              onPress={() => setType(opt.value)}
+              key={opt.type}
+              onPress={() => setType(opt.type)}
               style={[
                 styles.chip,
                 {
-                  backgroundColor: type === opt.value ? palette.primary : palette.background,
+                  backgroundColor: type === opt.type ? palette.primary : palette.background,
                   borderColor: palette.border,
                 },
               ]}
             >
               <Text
                 style={{
-                  color: type === opt.value ? '#FFF' : palette.textSecondary,
+                  color: type === opt.type ? '#FFF' : palette.textSecondary,
                   fontWeight: '600',
                   fontSize: 13,
                 }}
               >
-                {opt.label}
+                {opt.icon} {opt.label}
               </Text>
             </Pressable>
           ))}
@@ -146,6 +153,18 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
             </Pressable>
           ))}
         </ScrollView>
+
+        <Text style={[styles.label, { color: palette.textSecondary }]}>Tags (optional)</Text>
+        <TextInput
+          value={tagsInput}
+          onChangeText={setTagsInput}
+          placeholder="favorite, rewatch, co-op"
+          placeholderTextColor={palette.textMuted}
+          style={[
+            styles.input,
+            { color: palette.textPrimary, borderColor: palette.border, backgroundColor: palette.background },
+          ]}
+        />
 
         <Text style={[styles.label, { color: palette.textSecondary }]}>Notes (optional)</Text>
         <TextInput

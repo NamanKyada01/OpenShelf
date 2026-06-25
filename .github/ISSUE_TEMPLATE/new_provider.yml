@@ -1,0 +1,21 @@
+name: New API Provider
+description: Wire a metadata search provider (TMDB, Open Library, etc.)
+title: "[Provider]: "
+labels: ["provider"]
+body:
+  - type: input
+    id: provider-name
+    attributes:
+      label: Provider name
+    validations:
+      required: true
+  - type: textarea
+    id: media-types
+    attributes:
+      label: Which media types does it cover?
+    validations:
+      required: true
+  - type: input
+    id: api-docs
+    attributes:
+      label: API documentation URL

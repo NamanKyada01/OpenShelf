@@ -1,6 +1,7 @@
-import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 import type { MediaItem, MediaStatus, MediaType } from '../types';
-import { mediaCollection, userMediaQuery } from './firebase';
+import { saveMediaItem, removeMediaItem } from '../db/syncService';
+import { mediaCollection } from '../services/firebase';
+import type { FirebaseFirestoreTypes } from '@react-native-firebase/firestore';
 
 function mapMedia(doc: FirebaseFirestoreTypes.QueryDocumentSnapshot): MediaItem {
   const data = doc.data() as Omit<MediaItem, 'id'>;
@@ -13,24 +14,6 @@ function sortByUpdated(items: MediaItem[]): MediaItem[] {
   );
 }
 
-export async function fetchUserMedia(userId: string): Promise<MediaItem[]> {
-  const snapshot = await userMediaQuery(userId).get();
-  return sortByUpdated(snapshot.docs.map(mapMedia));
-}
-
-export function subscribeToUserMedia(
-  userId: string,
-  onUpdate: (items: MediaItem[]) => void,
-  onError?: (error: Error) => void,
-) {
-  return userMediaQuery(userId).onSnapshot(
-    snapshot => {
-      onUpdate(sortByUpdated(snapshot.docs.map(mapMedia)));
-    },
-    error => onError?.(error),
-  );
-}
-
 export async function createMediaItem(
   userId: string,
   input: {
@@ -39,6 +22,10 @@ export async function createMediaItem(
     status: MediaStatus;
     rating?: number;
     notes?: string;
+    tags?: string[];
+    posterUrl?: string;
+    startedAt?: string;
+    completedAt?: string;
   },
 ): Promise<MediaItem> {
   const now = new Date().toISOString();
@@ -51,32 +38,69 @@ export async function createMediaItem(
     status: input.status,
     rating: input.rating,
     notes: input.notes,
+    tags: input.tags,
+    posterUrl: input.posterUrl,
+    startedAt: input.status === 'in_progress' ? input.startedAt ?? now : input.startedAt,
+    completedAt: input.status === 'completed' ? input.completedAt ?? now : input.completedAt,
     createdAt: now,
     updatedAt: now,
   };
 
-  await docRef.set(item);
-  return item;
+  return saveMediaItem(item);
 }
 
 export async function updateMediaItem(
   id: string,
-  updates: Partial<Pick<MediaItem, 'title' | 'status' | 'rating' | 'notes' | 'type'>>,
-): Promise<void> {
-  await mediaCollection.doc(id).update({
+  userId: string,
+  updates: Partial<
+    Pick<
+      MediaItem,
+      'title' | 'status' | 'rating' | 'notes' | 'type' | 'tags' | 'startedAt' | 'completedAt' | 'posterUrl'
+    >
+  >,
+): Promise<MediaItem | null> {
+  const doc = await mediaCollection.doc(id).get();
+  if (!doc.exists) {
+    return null;
+  }
+
+  const existing = { id: doc.id, ...(doc.data() as Omit<MediaItem, 'id'>) };
+  const now = new Date().toISOString();
+  const nextStatus = updates.status ?? existing.status;
+
+  const item: MediaItem = {
+    ...existing,
     ...updates,
-    updatedAt: new Date().toISOString(),
-  });
+    userId,
+    startedAt:
+      nextStatus === 'in_progress' && !existing.startedAt && !updates.startedAt
+        ? now
+        : updates.startedAt ?? existing.startedAt,
+    completedAt:
+      nextStatus === 'completed' && !existing.completedAt && !updates.completedAt
+        ? now
+        : updates.completedAt ?? existing.completedAt,
+    updatedAt: now,
+  };
+
+  return saveMediaItem(item);
 }
 
 export async function deleteMediaItem(id: string): Promise<void> {
-  await mediaCollection.doc(id).delete();
+  await removeMediaItem(id);
 }
 
-export async function getActiveMediaCount(userId: string): Promise<number> {
-  const snapshot = await mediaCollection
-    .where('userId', '==', userId)
-    .where('status', '==', 'in_progress')
-    .get();
-  return snapshot.size;
+export function subscribeToUserMedia(
+  userId: string,
+  onUpdate: (items: MediaItem[]) => void,
+  onError?: (error: Error) => void,
+) {
+  return mediaCollection.where('userId', '==', userId).onSnapshot(
+    snapshot => {
+      onUpdate(sortByUpdated(snapshot.docs.map(mapMedia)));
+    },
+    error => onError?.(error),
+  );
 }
+
+export { loadMediaForUser, importMediaItems, exportMediaItems } from '../db/syncService';

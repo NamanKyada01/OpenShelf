@@ -2,6 +2,8 @@ import React, { useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { upsertManyMediaLocal } from '../db/mediaRepository';
+import { loadMediaForUser } from '../db/syncService';
 import { StreakProvider } from '../contexts/StreakContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
@@ -10,7 +12,7 @@ import { subscribeToUserMedia } from '../services/mediaService';
 import { setUser, setAuthLoading } from '../store/slices/authSlice';
 import { setMediaItems, setMediaError } from '../store/slices/mediaSlice';
 import { LoginScreen } from '../screens/LoginScreen';
-import { MainTabs } from './MainTabs';
+import { MainStack } from './MainStackNavigator';
 
 export type RootStackParamList = {
   Auth: undefined;
@@ -38,13 +40,29 @@ function AppShell() {
       return;
     }
 
+    let active = true;
+
+    loadMediaForUser(user.uid)
+      .then(items => {
+        if (active) {
+          dispatch(setMediaItems(items));
+        }
+      })
+      .catch(error => dispatch(setMediaError(error.message)));
+
     const unsubscribe = subscribeToUserMedia(
       user.uid,
-      items => dispatch(setMediaItems(items)),
+      items => {
+        upsertManyMediaLocal(items);
+        dispatch(setMediaItems(items));
+      },
       error => dispatch(setMediaError(error.message)),
     );
 
-    return unsubscribe;
+    return () => {
+      active = false;
+      unsubscribe();
+    };
   }, [user, dispatch]);
 
   const navTheme = {
@@ -72,7 +90,7 @@ function AppShell() {
       <NavigationContainer theme={navTheme}>
         <Stack.Navigator screenOptions={{ headerShown: false }}>
           {user ? (
-            <Stack.Screen name="Main" component={MainTabs} />
+            <Stack.Screen name="Main" component={MainStack} />
           ) : (
             <Stack.Screen name="Auth">
               {() => <LoginScreen onAuthenticated={() => undefined} />}

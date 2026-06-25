@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
+import { useBackupRestore } from '../features/settings/useBackupRestore';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { signOut } from '../services/authService';
@@ -15,6 +16,7 @@ export function ProfileScreen() {
   const { items } = useAppSelector(state => state.media);
 
   const completed = items.filter(i => i.status === 'completed').length;
+  const { handleExport, openImport, ImportModal } = useBackupRestore();
 
   const handleSignOut = () => {
     Alert.alert('Sign out', 'Are you sure?', [
@@ -58,6 +60,24 @@ export function ProfileScreen() {
 
       <Pressable
         style={[styles.button, { backgroundColor: palette.surface, borderColor: palette.border }]}
+        onPress={handleExport}
+      >
+        <Text style={[styles.buttonText, { color: palette.textPrimary }]}>
+          Export shelf (JSON)
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.button, { backgroundColor: palette.surface, borderColor: palette.border }]}
+        onPress={openImport}
+      >
+        <Text style={[styles.buttonText, { color: palette.textPrimary }]}>
+          Import shelf (JSON)
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={[styles.button, { backgroundColor: palette.surface, borderColor: palette.border }]}
         onPress={toggleTheme}
       >
         <Text style={[styles.buttonText, { color: palette.textPrimary }]}>
@@ -71,6 +91,7 @@ export function ProfileScreen() {
       >
         <Text style={[styles.buttonText, { color: palette.danger }]}>Sign out</Text>
       </Pressable>
+      {ImportModal}
     </Screen>
   );
 }

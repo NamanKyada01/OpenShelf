@@ -1,48 +1,50 @@
 # OpenShelf
 
-Open-source Android media backlog tracker built with **React Native CLI**. Track movies, TV, books, and games — build a Duolingo-style daily streak, and show it on your home screen with a custom widget.
+Open-source **personal media backlog** (Shelf plan) built with React Native CLI. Track movies, TV, books, and games — offline-first with cloud sync, daily streaks, stats, and an Android home widget.
 
 [![Figma Design](https://img.shields.io/badge/Figma-Design-6C63FF?style=flat&logo=figma)](https://www.figma.com/design/EMgclf9mGfRbhuUSWl9x6y/OpenShelf-Mobile)
 [![React Native](https://img.shields.io/badge/React%20Native-0.86-61DAFB?style=flat&logo=react)](https://reactnative.dev/)
-[![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=flat&logo=firebase)](https://firebase.google.com/)
 
 ## Features
 
-- **Media backlog** — Track movies, TV, books, and games with status (Plan → In Progress → Completed)
-- **Firebase Auth** — Email/password sign in and sign up
-- **Cloud sync** — Firestore-backed library synced across sessions
-- **Daily streak** — Duolingo-style streak when you log media activity each day
-- **Android home widget** — Live streak count on your home screen
-- **Modern UI** — Dark-first design with `react-native-modal` bottom sheets
-- **Redux + Context** — Redux Toolkit for auth/media state; React Context for theme and streak
+- **Media backlog** — Plan → In Progress → Completed / Dropped pipeline
+- **Offline-first** — SQLite local DB; works without network
+- **Cloud sync** — Firebase Auth + Firestore (optional when online)
+- **Rating, notes, tags, dates** — Full detail screen per item
+- **Stats dashboard** — Completed by month, type breakdown, avg rating
+- **Export / import JSON** — No vendor lock-in
+- **Daily streak** — Duolingo-style consistency tracking
+- **Android widget** — Streak on your home screen
+- **Contributor-ready** — Plugin media types, provider stubs, issue templates, CI
+
+## v1 media types
+
+Movies · TV · Books · Games (manual add first; TMDB/Open Library/IGDB stubs ready for v0.2)
 
 ## Design
 
-UI tokens and screens are defined in Figma:
+**[OpenShelf Mobile — Figma](https://www.figma.com/design/EMgclf9mGfRbhuUSWl9x6y/OpenShelf-Mobile)**
 
-**[OpenShelf Mobile — Figma file](https://www.figma.com/design/EMgclf9mGfRbhuUSWl9x6y/OpenShelf-Mobile)**
+## Project structure
 
-## Tech stack
-
-| Layer | Choice |
-|-------|--------|
-| Framework | React Native CLI 0.86 + TypeScript |
-| Navigation | React Navigation (native stack + bottom tabs) |
-| State | Redux Toolkit + React Context (theme, streak) |
-| Backend | Firebase Auth + Cloud Firestore |
-| Modals | react-native-modal |
-| Platform | Android-first (custom widget) |
+```
+src/
+├── config/           # v1 scope
+├── db/               # SQLite + sync
+├── features/         # stats, library detail, settings
+├── media-types/      # plugin registry
+├── providers/        # metadata API adapters
+├── components/       # shared UI
+├── contexts/         # theme + streak
+├── store/            # Redux
+└── navigation/
+docs/
+├── architecture.md
+└── adding-a-media-type.md
+.github/              # CI + issue templates
+```
 
 ## Getting started
-
-### Prerequisites
-
-- Node.js 22+
-- Android Studio + SDK
-- Java 17
-- A [Firebase project](https://console.firebase.google.com/)
-
-### 1. Clone and install
 
 ```bash
 git clone https://github.com/NamanKyada01/OpenShelf.git
@@ -50,57 +52,27 @@ cd OpenShelf
 npm install
 ```
 
-### 2. Firebase setup
-
-1. Create a Firebase project and enable **Email/Password** authentication.
-2. Create a **Cloud Firestore** database.
-3. Download `google-services.json` from Firebase Console → Project settings → Your apps → Android (`com.openshelf`).
-4. Replace `android/app/google-services.json` with your file.
-5. Deploy Firestore rules from `firestore.rules` (or paste in Firebase Console).
-
-### 3. Run on Android
-
-```bash
-npm run android
-```
-
-### 4. Add the streak widget
-
-Long-press your Android home screen → Widgets → **OpenShelf Streak**.
-
-## Project structure
-
-```
-src/
-├── components/     # MediaCard, AddMediaModal, StreakFlame
-├── contexts/       # ThemeContext, StreakContext
-├── navigation/     # AppNavigator, MainTabs
-├── screens/        # Home, Library, Streak, Profile, Login
-├── services/       # Firebase, auth, media, streak
-├── store/          # Redux slices (auth, media)
-└── native/         # WidgetBridge JS interface
-android/            # Native Android widget + Firebase config
-```
-
-## Contributing
-
-We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
-
-- Adding a new media type
-- Wiring a metadata API (TMDB, Open Library, etc.)
-- Improving the Android widget
-- Translations and accessibility
+1. Replace `android/app/google-services.json` with your Firebase file
+2. Enable Email/Password auth + Firestore
+3. Deploy `firestore.rules`
+4. `npm run android`
 
 ## Roadmap
 
-- [x] Auth + Firestore sync
-- [x] Media CRUD with filters
-- [x] Daily streak system
-- [x] Android home screen widget
-- [ ] TMDB / Open Library search
-- [ ] Stats dashboard & yearly recap
+- [x] Offline SQLite + Firestore sync
+- [x] Media CRUD, filters, detail screen
+- [x] Stats dashboard
+- [x] Export/import JSON
+- [x] Daily streak + Android widget
+- [x] Contributor docs + CI
+- [ ] TMDB / Open Library search (v0.2)
+- [ ] Yearly recap charts
 - [ ] iOS support
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/adding-a-media-type.md](docs/adding-a-media-type.md).
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT

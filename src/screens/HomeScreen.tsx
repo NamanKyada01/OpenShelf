@@ -6,6 +6,8 @@ import {
   Text,
   View,
 } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { AddMediaModal } from '../components/AddMediaModal';
 import { MediaCard } from '../components/MediaCard';
@@ -13,12 +15,16 @@ import { StreakBanner } from '../components/StreakFlame';
 import { useStreak } from '../contexts/StreakContext';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
+import type { MainStackParamList } from '../navigation/MainStack';
 import { createMediaItem } from '../services/mediaService';
 import { addMediaItem } from '../store/slices/mediaSlice';
 import { spacing } from '../theme/spacing';
 
+type Nav = NativeStackNavigationProp<MainStackParamList>;
+
 export function HomeScreen() {
   const { palette } = useTheme();
+  const navigation = useNavigation<Nav>();
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.auth);
   const { items } = useAppSelector(state => state.media);
@@ -61,7 +67,12 @@ export function HomeScreen() {
             Nothing in progress. Add something to your shelf!
           </Text>
         }
-        renderItem={({ item }) => <MediaCard item={item} />}
+        renderItem={({ item }) => (
+          <MediaCard
+            item={item}
+            onPress={() => navigation.navigate('MediaDetail', { itemId: item.id })}
+          />
+        )}
       />
 
       <Pressable

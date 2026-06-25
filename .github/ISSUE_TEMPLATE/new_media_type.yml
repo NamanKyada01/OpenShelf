@@ -1,0 +1,22 @@
+name: New Media Type
+description: Add support for a new media category
+title: "[Media Type]: "
+labels: ["media-type"]
+body:
+  - type: input
+    id: type-name
+    attributes:
+      label: Media type name (e.g. Podcast)
+    validations:
+      required: true
+  - type: textarea
+    id: provider
+    attributes:
+      label: Suggested metadata API (optional)
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I read docs/adding-a-media-type.md
+          required: true

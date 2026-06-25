@@ -1,43 +1,42 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { MediaItem } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
+import { getMediaTypeConfig } from '../media-types';
 import { radius, spacing } from '../theme/spacing';
 import { StatusChip } from './StatusChip';
-
-const TYPE_LABELS: Record<MediaItem['type'], string> = {
-  movie: 'Movie',
-  tv: 'TV',
-  book: 'Book',
-  game: 'Game',
-};
 
 interface MediaCardProps {
   item: MediaItem;
   onPress?: () => void;
 }
 
-export function MediaCard({ item }: MediaCardProps) {
+export function MediaCard({ item, onPress }: MediaCardProps) {
   const { palette } = useTheme();
+  const config = getMediaTypeConfig(item.type);
 
   return (
-    <View style={[styles.card, { backgroundColor: palette.surface }]}>
-      <View style={[styles.poster, { backgroundColor: palette.primary }]}>
-        <Text style={styles.posterText}>{item.title.charAt(0).toUpperCase()}</Text>
+    <Pressable
+      onPress={onPress}
+      style={[styles.card, { backgroundColor: palette.surface }]}
+    >
+      <View style={[styles.poster, { backgroundColor: config.color }]}>
+        <Text style={styles.posterText}>{config.icon}</Text>
       </View>
       <View style={styles.content}>
         <Text style={[styles.title, { color: palette.textPrimary }]} numberOfLines={2}>
           {item.title}
         </Text>
         <Text style={[styles.meta, { color: palette.textSecondary }]}>
-          {TYPE_LABELS[item.type]}
+          {config.label}
+          {item.tags?.length ? ` · ${item.tags.slice(0, 2).join(', ')}` : ''}
         </Text>
         <StatusChip status={item.status} />
       </View>
       {item.rating ? (
         <Text style={[styles.rating, { color: palette.streak }]}>★ {item.rating}</Text>
       ) : null}
-    </View>
+    </Pressable>
   );
 }
 
