@@ -1,97 +1,106 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# OpenShelf
 
-# Getting Started
+Open-source Android media backlog tracker built with **React Native CLI**. Track movies, TV, books, and games — build a Duolingo-style daily streak, and show it on your home screen with a custom widget.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+[![Figma Design](https://img.shields.io/badge/Figma-Design-6C63FF?style=flat&logo=figma)](https://www.figma.com/design/EMgclf9mGfRbhuUSWl9x6y/OpenShelf-Mobile)
+[![React Native](https://img.shields.io/badge/React%20Native-0.86-61DAFB?style=flat&logo=react)](https://reactnative.dev/)
+[![Firebase](https://img.shields.io/badge/Firebase-Auth%20%2B%20Firestore-FFCA28?style=flat&logo=firebase)](https://firebase.google.com/)
 
-## Step 1: Start Metro
+## Features
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+- **Media backlog** — Track movies, TV, books, and games with status (Plan → In Progress → Completed)
+- **Firebase Auth** — Email/password sign in and sign up
+- **Cloud sync** — Firestore-backed library synced across sessions
+- **Daily streak** — Duolingo-style streak when you log media activity each day
+- **Android home widget** — Live streak count on your home screen
+- **Modern UI** — Dark-first design with `react-native-modal` bottom sheets
+- **Redux + Context** — Redux Toolkit for auth/media state; React Context for theme and streak
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+## Design
 
-```sh
-# Using npm
-npm start
+UI tokens and screens are defined in Figma:
 
-# OR using Yarn
-yarn start
+**[OpenShelf Mobile — Figma file](https://www.figma.com/design/EMgclf9mGfRbhuUSWl9x6y/OpenShelf-Mobile)**
+
+## Tech stack
+
+| Layer | Choice |
+|-------|--------|
+| Framework | React Native CLI 0.86 + TypeScript |
+| Navigation | React Navigation (native stack + bottom tabs) |
+| State | Redux Toolkit + React Context (theme, streak) |
+| Backend | Firebase Auth + Cloud Firestore |
+| Modals | react-native-modal |
+| Platform | Android-first (custom widget) |
+
+## Getting started
+
+### Prerequisites
+
+- Node.js 22+
+- Android Studio + SDK
+- Java 17
+- A [Firebase project](https://console.firebase.google.com/)
+
+### 1. Clone and install
+
+```bash
+git clone https://github.com/NamanKyada01/OpenShelf.git
+cd OpenShelf
+npm install
 ```
 
-## Step 2: Build and run your app
+### 2. Firebase setup
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
+1. Create a Firebase project and enable **Email/Password** authentication.
+2. Create a **Cloud Firestore** database.
+3. Download `google-services.json` from Firebase Console → Project settings → Your apps → Android (`com.openshelf`).
+4. Replace `android/app/google-services.json` with your file.
+5. Deploy Firestore rules from `firestore.rules` (or paste in Firebase Console).
 
-### Android
+### 3. Run on Android
 
-```sh
-# Using npm
+```bash
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
+### 4. Add the streak widget
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
+Long-press your Android home screen → Widgets → **OpenShelf Streak**.
 
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+## Project structure
 
-```sh
-bundle install
+```
+src/
+├── components/     # MediaCard, AddMediaModal, StreakFlame
+├── contexts/       # ThemeContext, StreakContext
+├── navigation/     # AppNavigator, MainTabs
+├── screens/        # Home, Library, Streak, Profile, Login
+├── services/       # Firebase, auth, media, streak
+├── store/          # Redux slices (auth, media)
+└── native/         # WidgetBridge JS interface
+android/            # Native Android widget + Firebase config
 ```
 
-Then, and every time you update your native dependencies, run:
+## Contributing
 
-```sh
-bundle exec pod install
-```
+We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for:
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+- Adding a new media type
+- Wiring a metadata API (TMDB, Open Library, etc.)
+- Improving the Android widget
+- Translations and accessibility
 
-```sh
-# Using npm
-npm run ios
+## Roadmap
 
-# OR using Yarn
-yarn ios
-```
+- [x] Auth + Firestore sync
+- [x] Media CRUD with filters
+- [x] Daily streak system
+- [x] Android home screen widget
+- [ ] TMDB / Open Library search
+- [ ] Stats dashboard & yearly recap
+- [ ] iOS support
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## License
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
-
-## Step 3: Modify your app
-
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+MIT — see [LICENSE](LICENSE).
