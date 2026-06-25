@@ -15,6 +15,7 @@ import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { getMediaTypeOptions } from '../media-types';
 import type { MainStackParamList } from '../navigation/MainStack';
 import { setFilterStatus, setFilterType } from '../store/slices/mediaSlice';
+import type { MediaStatus } from '../types';
 import { radius, spacing } from '../theme/spacing';
 
 type Nav = NativeStackNavigationProp<MainStackParamList>;

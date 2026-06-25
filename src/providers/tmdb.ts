@@ -1,7 +1,7 @@
 import type { MetadataProvider, MetadataResult } from './types';
 
 // Replace with your actual TMDB API key
-const TMDB_API_KEY = process.env.TMDB_API_KEY || '';
+const TMDB_API_KEY = '';
 
 export const tmdbProvider: MetadataProvider = {
   key: 'tmdb',
