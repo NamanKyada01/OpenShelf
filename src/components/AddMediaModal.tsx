@@ -12,6 +12,8 @@ import Modal from 'react-native-modal';
 import type { MediaStatus, MediaType } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { getMediaTypeOptions } from '../media-types';
+import { getProviderForType } from '../providers';
+import type { MetadataResult } from '../providers/types';
 import { radius, spacing } from '../theme/spacing';
 
 const STATUSES: { label: string; value: MediaStatus }[] = [
@@ -30,25 +32,59 @@ interface AddMediaModalProps {
     status: MediaStatus;
     notes?: string;
     tags?: string[];
+    posterUrl?: string;
   }) => Promise<void>;
 }
 
 export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps) {
   const { palette } = useTheme();
   const [title, setTitle] = useState('');
+  const [posterUrl, setPosterUrl] = useState<string | undefined>();
   const [type, setType] = useState<MediaType>('movie');
   const [status, setStatus] = useState<MediaStatus>('plan');
   const [notes, setNotes] = useState('');
   const [tagsInput, setTagsInput] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<MetadataResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  // Debounced Search
+  React.useEffect(() => {
+    const provider = getProviderForType(type);
+    if (!provider || !searchQuery.trim()) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    setIsSearching(true);
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        const results = await provider.search(searchQuery);
+        setSearchResults(results);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, type]);
+
   const reset = () => {
     setTitle('');
+    setPosterUrl(undefined);
     setType('movie');
     setStatus('plan');
     setNotes('');
     setTagsInput('');
     setLoading(false);
+    setSearchQuery('');
+    setSearchResults([]);
   };
 
   const handleSubmit = async () => {
@@ -67,6 +103,7 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
         status,
         notes: notes.trim() || undefined,
         tags: tags.length ? tags : undefined,
+        posterUrl,
       });
       reset();
       onClose();
@@ -91,7 +128,10 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
         <Text style={[styles.label, { color: palette.textSecondary }]}>Title</Text>
         <TextInput
           value={title}
-          onChangeText={setTitle}
+          onChangeText={(text) => {
+            setTitle(text);
+            setSearchQuery(text);
+          }}
           placeholder="What are you tracking?"
           placeholderTextColor={palette.textMuted}
           style={[
@@ -99,6 +139,36 @@ export function AddMediaModal({ visible, onClose, onSubmit }: AddMediaModalProps
             { color: palette.textPrimary, borderColor: palette.border, backgroundColor: palette.background },
           ]}
         />
+        {isSearching && (
+          <View style={{ padding: spacing.sm, alignItems: 'center' }}>
+            <ActivityIndicator color={palette.primary} />
+          </View>
+        )}
+        
+        {searchResults.length > 0 && searchQuery === title && !isSearching && (
+          <ScrollView style={[styles.resultsContainer, { borderColor: palette.border }]} nestedScrollEnabled>
+            {searchResults.map((res, i) => (
+              <Pressable
+                key={`${res.externalId}-${i}`}
+                style={[styles.resultItem, { borderBottomColor: palette.border }]}
+                onPress={() => {
+                  setTitle(res.title);
+                  setPosterUrl(res.posterUrl);
+                  setSearchQuery(''); // Close results
+                  setSearchResults([]);
+                }}
+              >
+                <Text style={{ color: palette.textPrimary, fontWeight: '600' }}>{res.title}</Text>
+                {res.year && <Text style={{ color: palette.textSecondary, fontSize: 12 }}>{res.year}</Text>}
+                {res.description && (
+                  <Text style={{ color: palette.textMuted, fontSize: 12 }} numberOfLines={1}>
+                    {res.description}
+                  </Text>
+                )}
+              </Pressable>
+            ))}
+          </ScrollView>
+        )}
 
         <Text style={[styles.label, { color: palette.textSecondary }]}>Type</Text>
         <View style={styles.row}>
@@ -261,5 +331,17 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: '700',
+  },
+  resultsContainer: {
+    maxHeight: 150,
+    borderWidth: 1,
+    borderTopWidth: 0,
+    borderBottomLeftRadius: radius.md,
+    borderBottomRightRadius: radius.md,
+    marginTop: -4, // tuck under input
+  },
+  resultItem: {
+    padding: spacing.sm,
+    borderBottomWidth: 1,
   },
 });

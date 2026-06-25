@@ -8,7 +8,6 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import Modal from 'react-native-modal';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RatingStars } from '../../components/RatingStars';
 import { Screen } from '../../components/Screen';

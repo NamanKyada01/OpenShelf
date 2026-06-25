@@ -6,7 +6,6 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  View,
 } from 'react-native';
 import { Screen } from '../components/Screen';
 import { useTheme } from '../contexts/ThemeContext';
