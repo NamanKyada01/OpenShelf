@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">OpenShelf</string>
+    <string name="widget_name">OpenShelf Streak</string>
+    <string name="widget_description">Track your daily media logging streak</string>
 </resources>
