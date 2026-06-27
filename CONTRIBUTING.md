@@ -1,37 +1,35 @@
 # Contributing to OpenShelf
 
-OpenShelf implements the **Shelf** open-source media backlog plan. We welcome PRs!
+First off, thank you for considering contributing to OpenShelf! It's people like you that make the open-source community such a great place to learn, inspire, and create.
 
-## Architecture
+## 🛠 How to Contribute
 
-Read [docs/architecture.md](docs/architecture.md) before contributing.
+### 1. Reporting Bugs
+If you find a bug, please use the **Bug Report** issue template. Include as much detail as possible:
+- Steps to reproduce the bug.
+- Expected vs. actual behavior.
+- The platform (iOS/Android) and OS version.
 
-## Quick start
+### 2. Suggesting Enhancements
+Have an idea for a new feature? Great! Use the **Feature Request** issue template. Describe how it should work and why it would be beneficial to the community.
 
-1. Fork + clone
-2. Firebase setup (see README)
-3. `npm run android`
-4. Branch: `feature/your-feature`
-5. `npm run lint` && `npx tsc --noEmit`
+### 3. Adding New Media Types
+Currently, OpenShelf supports Movies, TV, Books, and Games. To add a new media type (e.g., Music, Board Games):
+1. Update `MediaType` in `src/types.ts`.
+2. Add a new configuration block in `src/media-types/index.ts` with a custom label and icon.
+3. Update the Type Breakdown in `src/screens/ProfileScreen.tsx`.
 
-## Contribution lanes
+### 4. Adding New API Providers
+Want to support a new search API? 
+1. Create a new provider file in `src/providers/yourProvider.ts`.
+2. Implement the `MetadataProvider` interface from `src/providers/types.ts`.
+3. Export your provider in `src/providers/index.ts` and add it to the `providers` array.
 
-| Label | Examples |
-|-------|----------|
-| `good first issue` | Locales, filter chips, README |
-| `media-type` | Anime, podcasts, manga |
-| `provider` | TMDB, Open Library, IGDB |
-| `platform` | Android widget, iOS |
-| `design` | Figma token sync |
-| `testing` | Jest, Detox |
+## 💻 Development Setup
+1. Fork the repo and create your branch from `main`.
+2. Install dependencies with `npm install`.
+3. Ensure your code passes linting: `npm run lint`.
+4. Check TypeScript types: `npx tsc --noEmit`.
+5. Submit a Pull Request with a clear description of your changes!
 
-## Adding a media type
-
-Full walkthrough: [docs/adding-a-media-type.md](docs/adding-a-media-type.md)
-
-## Code conventions
-
-- TypeScript strict
-- SQLite first, Firestore sync second
-- Redux for auth/media; Context for theme/streak
-- One feature per PR when possible
+We look forward to seeing your pull requests!
