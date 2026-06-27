@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   FlatList,
   Pressable,
@@ -14,7 +14,7 @@ import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { getMediaTypeOptions } from '../media-types';
 import type { MainStackParamList } from '../navigation/MainStack';
-import { setFilterStatus, setFilterType } from '../store/slices/mediaSlice';
+import { toggleFilterStatus, clearFilterStatuses, setFilterType } from '../store/slices/mediaSlice';
 import type { MediaStatus } from '../types';
 import { radius, spacing } from '../theme/spacing';
 
@@ -28,19 +28,50 @@ const STATUS_FILTERS: Array<{ label: string; value: MediaStatus | 'all' }> = [
   { label: 'Dropped', value: 'dropped' },
 ];
 
+type SortOption = 'date_added_desc' | 'date_added_asc' | 'alpha_asc' | 'alpha_desc' | 'rating_desc';
+
+const SORT_OPTIONS: Array<{ label: string; value: SortOption }> = [
+  { label: 'Newest', value: 'date_added_desc' },
+  { label: 'Oldest', value: 'date_added_asc' },
+  { label: 'A-Z', value: 'alpha_asc' },
+  { label: 'Z-A', value: 'alpha_desc' },
+  { label: 'Top Rated', value: 'rating_desc' },
+];
+
 export function LibraryScreen() {
   const { palette } = useTheme();
   const navigation = useNavigation<Nav>();
   const dispatch = useAppDispatch();
-  const { items, filterStatus, filterType } = useAppSelector(state => state.media);
+  const { items, filterStatuses, filterType } = useAppSelector(state => state.media);
 
-  const filtered = useMemo(() => {
-    return items.filter(item => {
-      const statusMatch = filterStatus === 'all' || item.status === filterStatus;
+  const [sortOption, setSortOption] = useState<SortOption>('date_added_desc');
+
+  const filteredAndSorted = useMemo(() => {
+    let result = items.filter(item => {
+      const statusMatch = filterStatuses.length === 0 || filterStatuses.includes(item.status);
       const typeMatch = filterType === 'all' || item.type === filterType;
       return statusMatch && typeMatch;
     });
-  }, [items, filterStatus, filterType]);
+
+    result = [...result].sort((a, b) => {
+      switch (sortOption) {
+        case 'date_added_desc':
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        case 'date_added_asc':
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        case 'alpha_asc':
+          return a.title.localeCompare(b.title);
+        case 'alpha_desc':
+          return b.title.localeCompare(a.title);
+        case 'rating_desc':
+          return (b.rating || 0) - (a.rating || 0);
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [items, filterStatuses, filterType, sortOption]);
 
   return (
     <Screen style={styles.container}>
@@ -50,23 +81,25 @@ export function LibraryScreen() {
         {STATUS_FILTERS.map(f => (
           <Pressable
             key={f.value}
-            onPress={() => dispatch(setFilterStatus(f.value))}
+            onPress={() => {
+              if (f.value === 'all') {
+                dispatch(clearFilterStatuses());
+              } else {
+                dispatch(toggleFilterStatus(f.value as MediaStatus));
+              }
+            }}
             style={[
               styles.chip,
               {
                 backgroundColor:
-                  filterStatus === f.value ? palette.primary : palette.surface,
+                  (f.value === 'all' && filterStatuses.length === 0) || (f.value !== 'all' && filterStatuses.includes(f.value as MediaStatus))
+                    ? palette.primary
+                    : palette.surface,
                 borderColor: palette.border,
               },
             ]}
           >
-            <Text
-              style={{
-                color: filterStatus === f.value ? '#FFF' : palette.textSecondary,
-                fontWeight: '600',
-                fontSize: 12,
-              }}
-            >
+            <Text style={[styles.chipText, { color: (f.value === 'all' && filterStatuses.length === 0) || (f.value !== 'all' && filterStatuses.includes(f.value as MediaStatus)) ? '#FFF' : palette.textSecondary }]}>
               {f.label}
             </Text>
           </Pressable>
@@ -87,21 +120,37 @@ export function LibraryScreen() {
               },
             ]}
           >
-            <Text
-              style={{
-                color: filterType === f.value ? '#FFF' : palette.textSecondary,
-                fontWeight: '600',
-                fontSize: 12,
-              }}
-            >
+            <Text style={[styles.chipText, { color: filterType === f.value ? '#FFF' : palette.textSecondary }]}>
               {f.label}
             </Text>
           </Pressable>
         ))}
       </View>
 
+      <View style={styles.filters}>
+        {SORT_OPTIONS.map(opt => (
+          <Pressable
+            key={opt.value}
+            onPress={() => setSortOption(opt.value)}
+            style={[
+              styles.chip,
+              {
+                backgroundColor: sortOption === opt.value ? palette.success : palette.surface,
+                borderColor: palette.border,
+              },
+            ]}
+          >
+            <Text
+              style={[styles.chipText, { color: sortOption === opt.value ? '#FFF' : palette.textSecondary }]}
+            >
+              {opt.label}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
       <FlatList
-        data={filtered}
+        data={filteredAndSorted}
         keyExtractor={item => item.id}
         contentContainerStyle={styles.list}
         ListEmptyComponent={
@@ -141,6 +190,10 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.full,
     borderWidth: 1,
+  },
+  chipText: {
+    fontWeight: '600',
+    fontSize: 12,
   },
   list: {
     paddingTop: spacing.md,

@@ -5,7 +5,7 @@ interface MediaSliceState {
   items: MediaItem[];
   loading: boolean;
   error: string | null;
-  filterStatus: MediaStatus | 'all';
+  filterStatuses: MediaStatus[];
   filterType: MediaType | 'all';
 }
 
@@ -13,7 +13,7 @@ const initialState: MediaSliceState = {
   items: [],
   loading: false,
   error: null,
-  filterStatus: 'all',
+  filterStatuses: [],
   filterType: 'all',
 };
 
@@ -45,8 +45,15 @@ const mediaSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
-    setFilterStatus(state, action: PayloadAction<MediaStatus | 'all'>) {
-      state.filterStatus = action.payload;
+    toggleFilterStatus(state, action: PayloadAction<MediaStatus>) {
+      if (state.filterStatuses.includes(action.payload)) {
+        state.filterStatuses = state.filterStatuses.filter(s => s !== action.payload);
+      } else {
+        state.filterStatuses.push(action.payload);
+      }
+    },
+    clearFilterStatuses(state) {
+      state.filterStatuses = [];
     },
     setFilterType(state, action: PayloadAction<MediaType | 'all'>) {
       state.filterType = action.payload;
@@ -61,7 +68,8 @@ export const {
   removeMediaItem,
   setMediaLoading,
   setMediaError,
-  setFilterStatus,
+  toggleFilterStatus,
+  clearFilterStatuses,
   setFilterType,
 } = mediaSlice.actions;
 
