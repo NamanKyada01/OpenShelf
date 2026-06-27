@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Screen } from '../components/Screen';
+import { ActivityHeatmap } from '../components/ActivityHeatmap';
 import { useBackupRestore } from '../features/settings/useBackupRestore';
 import { useTheme } from '../contexts/ThemeContext';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
@@ -92,6 +93,8 @@ export function ProfileScreen() {
           <Text style={[styles.statLabel, { color: palette.textSecondary }]}>Music</Text>
         </View>
       </View>
+
+      <ActivityHeatmap />
 
       <Pressable
         style={[styles.button, { backgroundColor: palette.surface, borderColor: palette.border }]}
