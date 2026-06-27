@@ -22,6 +22,7 @@ export function ProfileScreen() {
     tv: items.filter(i => i.type === 'tv').length,
     book: items.filter(i => i.type === 'book').length,
     game: items.filter(i => i.type === 'game').length,
+    music: items.filter(i => i.type === 'music').length,
   };
 
   const { handleExport, openImport, ImportModal } = useBackupRestore();
@@ -85,6 +86,10 @@ export function ProfileScreen() {
         <View style={styles.stat}>
           <Text style={[styles.statNum, { color: palette.textPrimary }]}>{typeCounts.game}</Text>
           <Text style={[styles.statLabel, { color: palette.textSecondary }]}>Games</Text>
+        </View>
+        <View style={styles.stat}>
+          <Text style={[styles.statNum, { color: palette.textPrimary }]}>{typeCounts.music}</Text>
+          <Text style={[styles.statLabel, { color: palette.textSecondary }]}>Music</Text>
         </View>
       </View>
 

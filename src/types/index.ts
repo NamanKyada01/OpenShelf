@@ -1,4 +1,4 @@
-export type MediaType = 'movie' | 'tv' | 'book' | 'game';
+export type MediaType = 'movie' | 'tv' | 'book' | 'game' | 'music';
 
 export type MediaStatus = 'plan' | 'in_progress' | 'completed' | 'dropped';
 

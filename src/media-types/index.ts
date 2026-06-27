@@ -5,7 +5,7 @@ export interface MediaTypeConfig {
   label: string;
   icon: string;
   color: string;
-  providerKey?: 'tmdb' | 'openLibrary' | 'igdb';
+  providerKey?: 'tmdb' | 'openLibrary' | 'igdb' | 'itunes';
 }
 
 export const mediaTypeRegistry: Record<MediaType, MediaTypeConfig> = {
@@ -36,6 +36,13 @@ export const mediaTypeRegistry: Record<MediaType, MediaTypeConfig> = {
     icon: '🎮',
     color: '#FF9600',
     providerKey: 'igdb',
+  },
+  music: {
+    type: 'music',
+    label: 'Music',
+    icon: '🎵',
+    color: '#FF2A5F',
+    providerKey: 'itunes',
   },
 };
 
