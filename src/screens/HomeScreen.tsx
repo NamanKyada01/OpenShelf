@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { Screen } from '../components/Screen';
 import { AddMediaModal } from '../components/AddMediaModal';
 import { MediaCard } from '../components/MediaCard';
@@ -23,6 +24,7 @@ import { spacing } from '../theme/spacing';
 type Nav = NativeStackNavigationProp<MainStackParamList>;
 
 export function HomeScreen() {
+  const { t } = useTranslation();
   const { palette } = useTheme();
   const navigation = useNavigation<Nav>();
   const dispatch = useAppDispatch();
@@ -54,11 +56,11 @@ export function HomeScreen() {
         ListHeaderComponent={
           <View style={styles.headerBlock}>
             <Text style={[styles.greeting, { color: palette.textPrimary }]}>
-              Hey{user?.displayName ? `, ${user.displayName}` : ''} 👋
+              {t('greeting')}{user?.displayName ? `, ${user.displayName}` : ''} 👋
             </Text>
             <StreakBanner />
             <Text style={[styles.sectionTitle, { color: palette.textPrimary }]}>
-              Currently Active
+              {t('currently_active')}
             </Text>
           </View>
         }
