@@ -39,7 +39,7 @@ export function ActivityHeatmap() {
     <View style={[styles.container, { backgroundColor: palette.surface }]}>
       <Text style={[styles.title, { color: palette.textPrimary }]}>30-Day Activity</Text>
       <View style={styles.grid}>
-        {days.map((day, index) => {
+        {days.map(day => {
           // Opacity based on count (0 = very dim, 1+ = brighter)
           let opacity = 0.1;
           if (day.count === 1) opacity = 0.4;
