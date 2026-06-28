@@ -11,6 +11,7 @@ import { onAuthStateChanged } from '../services/authService';
 import { subscribeToUserMedia } from '../services/mediaService';
 import { setUser, setAuthLoading } from '../store/slices/authSlice';
 import { setMediaItems, setMediaError } from '../store/slices/mediaSlice';
+import { requestNotificationPermission, scheduleDailyReminder } from '../services/notificationService';
 import { LoginScreen } from '../screens/LoginScreen';
 import { MainStack } from './MainStackNavigator';
 
@@ -39,6 +40,11 @@ function AppShell() {
       dispatch(setMediaItems([]));
       return;
     }
+
+    // Initialize notifications
+    requestNotificationPermission().then(() => {
+      scheduleDailyReminder();
+    }).catch(() => {});
 
     let active = true;
 

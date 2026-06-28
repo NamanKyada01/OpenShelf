@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
 import type { MediaItem } from '../types';
 import { useTheme } from '../contexts/ThemeContext';
 import { getMediaTypeConfig } from '../media-types';
@@ -15,11 +16,28 @@ export function MediaCard({ item, onPress }: MediaCardProps) {
   const { palette } = useTheme();
   const config = getMediaTypeConfig(item.type);
 
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const handlePressIn = () => {
+    scale.value = withSpring(0.95, { damping: 12, stiffness: 300 });
+  };
+
+  const handlePressOut = () => {
+    scale.value = withSpring(1, { damping: 12, stiffness: 300 });
+  };
+
   return (
-    <Pressable
-      onPress={onPress}
-      style={[styles.card, { backgroundColor: palette.surface }]}
-    >
+    <Animated.View style={[animatedStyle]}>
+      <Pressable
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        style={[styles.card, { backgroundColor: palette.surface }]}
+      >
       <View style={[styles.poster, { backgroundColor: config.color }]}>
         <Text style={styles.posterText}>{config.icon}</Text>
       </View>
@@ -36,7 +54,8 @@ export function MediaCard({ item, onPress }: MediaCardProps) {
       {item.rating ? (
         <Text style={[styles.rating, { color: palette.streak }]}>★ {item.rating}</Text>
       ) : null}
-    </Pressable>
+      </Pressable>
+    </Animated.View>
   );
 }
 
