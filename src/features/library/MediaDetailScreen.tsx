@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import Markdown from 'react-native-markdown-display';
 import { RatingStars } from '../../components/RatingStars';
 import { Screen } from '../../components/Screen';
 import { StatusChip } from '../../components/StatusChip';
@@ -36,6 +37,7 @@ export function MediaDetailScreen({ route, navigation }: Props) {
   const [notes, setNotes] = useState(item?.notes ?? '');
   const [tagsInput, setTagsInput] = useState(item?.tags?.join(', ') ?? '');
   const [saving, setSaving] = useState(false);
+  const [isEditingNotes, setIsEditingNotes] = useState(false);
 
   if (!item || !user) {
     return (
@@ -144,16 +146,43 @@ export function MediaDetailScreen({ route, navigation }: Props) {
           }
         />
 
-        <Text style={[styles.section, { color: palette.textPrimary }]}>Notes</Text>
-        <TextInput
-          value={notes}
-          onChangeText={setNotes}
-          multiline
-          placeholder="Your thoughts..."
-          placeholderTextColor={palette.textMuted}
-          style={[styles.input, styles.notes, { color: palette.textPrimary, borderColor: palette.border, backgroundColor: palette.surface }]}
-          onBlur={() => persist({ notes })}
-        />
+        <View style={styles.notesHeader}>
+          <Text style={[styles.section, { color: palette.textPrimary, marginTop: 0, marginBottom: 0 }]}>Notes / Journal</Text>
+          <Pressable onPress={() => setIsEditingNotes(!isEditingNotes)}>
+            <Text style={{ color: palette.primary, fontWeight: '600' }}>
+              {isEditingNotes ? 'Preview' : 'Edit'}
+            </Text>
+          </Pressable>
+        </View>
+
+        {isEditingNotes ? (
+          <TextInput
+            value={notes}
+            onChangeText={setNotes}
+            multiline
+            placeholder="Your thoughts... (Markdown supported)"
+            placeholderTextColor={palette.textMuted}
+            style={[styles.input, styles.notes, { color: palette.textPrimary, borderColor: palette.border, backgroundColor: palette.surface }]}
+            onBlur={() => persist({ notes })}
+          />
+        ) : (
+          <View style={[styles.markdownContainer, { backgroundColor: palette.surface, borderColor: palette.border }]}>
+            {notes ? (
+              <Markdown
+                style={{
+                  body: { color: palette.textPrimary },
+                  link: { color: palette.primary },
+                  heading1: { color: palette.textPrimary },
+                  heading2: { color: palette.textPrimary },
+                }}
+              >
+                {notes}
+              </Markdown>
+            ) : (
+              <Text style={{ color: palette.textMuted }}>No notes yet. Tap Edit to write a journal entry.</Text>
+            )}
+          </View>
+        )}
 
         {item.startedAt ? (
           <Text style={[styles.date, { color: palette.textMuted }]}>
@@ -235,8 +264,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   notes: {
-    minHeight: 100,
+    minHeight: 150,
     textAlignVertical: 'top',
+  },
+  notesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+  },
+  markdownContainer: {
+    minHeight: 150,
+    borderWidth: 1,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
   },
   date: {
     fontSize: 12,
